@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Contacto | LEVEL-UP GAMER</title>
+
+    <!-- Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+
+<body>
+
+    <!-- ENCABEZADO -->
+    <header>
+
+        <h1>LEVEL-UP GAMER</h1>
+
+        <!-- MENÚ -->
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="index.html#productos">Productos</a>
+            <a href="index.html#nosotros">Nosotros</a>
+            <a href="index.html#blogs">Blogs</a>
+            <a href="contacto.html">Contacto</a>
+        </nav>
+
+        <!-- CARRITO -->
+        <div class="carrito">
+            🛒 Cart (<span id="contador-carrito">0</span>)
+        </div>
+
+        <!-- INICIAR SESIÓN -->
+        <div class="login">
+            <a href="inicio_sesion.html" class="btn-login">
+                👤 Iniciar sesión
+            </a>
+        </div>
+
+    </header>
+
+
+    <main>
+
+        <!-- TITULO -->
+        <section class="contacto-principal">
+
+            <h2>📡 CONTACTA CON LEVEL-UP</h2>
+
+            <p>
+                ¿Tienes alguna pregunta, necesitas ayuda con tu compra
+                o quieres saber más sobre nuestros productos?
+            </p>
+
+            <p>
+                ¡Estamos aquí para ayudarte a subir de nivel! 🎮
+            </p>
+
+        </section>
+
+
+        <!-- CUADROS INTERACTIVOS -->
+        <section class="contacto-tarjetas">
+
+            <!-- CORREO -->
+            <div class="tarjeta-contacto">
+
+                <div class="icono-contacto">
+                    📧
+                </div>
+
+                <h3>Correo Electrónico</h3>
+
+                <p>
+                    Escríbenos y responderemos
+                    tus consultas.
+                </p>
+
+                <a href="mailto:contacto@levelupgamer.cl">
+                    contacto@levelupgamer.cl
+                </a>
+
+            </div>
+
+
+            <!-- TELEFONO -->
+            <div class="tarjeta-contacto">
+
+                <div class="icono-contacto">
+                    📱
+                </div>
+
+                <h3>WhatsApp</h3>
+
+                <p>
+                    ¿Necesitas ayuda rápida?
+                    Contáctanos directamente.
+                </p>
+
+                <a href="https://wa.me/56912345678" target="_blank">
+                    +56 9 1234 5678
+                </a>
+
+            </div>
+
+
+            <!-- DESPACHOS -->
+            <div class="tarjeta-contacto">
+
+                <div class="icono-contacto">
+                    🚚
+                </div>
+
+                <h3>Despachos</h3>
+
+                <p>
+                    Realizamos envíos a todo Chile.
+                </p>
+
+                <span>
+                    🇨🇱 Todo Chile
+                </span>
+
+            </div>
+
+
+            <!-- REDES -->
+            <div class="tarjeta-contacto">
+
+                <div class="icono-contacto">
+                    🎮
+                </div>
+
+                <h3>Redes Sociales</h3>
+
+                <p>
+                    Síguenos y mantente actualizado
+                    con nuestras novedades.
+                </p>
+
+                <div class="redes-contacto">
+
+                    <a href="#" target="_blank">
+                        Instagram
+                    </a>
+
+                    <a href="#" target="_blank">
+                        Facebook
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- FORMULARIO -->
+        <section class="formulario-contacto">
+
+            <h2>💬 ENVÍANOS UN MENSAJE</h2>
+
+            <form>
+
+                <div class="campo">
+
+                    <label for="nombre">
+                        Nombre
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nombre"
+                        name="nombre"
+                        placeholder="Ingresa tu nombre"
+                        required>
+
+                </div>
+
+
+                <div class="campo">
+
+                    <label for="correo">
+                        Correo electrónico
+                    </label>
+
+                    <input
+                        type="email"
+                        id="correo"
+                        name="correo"
+                        placeholder="ejemplo@correo.com"
+                        required>
+
+                </div>
+                <div class="campo"> <label for="asunto"> Asunto </label>
+                   <select id="asunto" name="asunto" required>
+
+                      <option value="" disabled selected> Selecciona un asunto </option>
+    
+                        <option value="estado-compra"> 🛒 Estado de compra </option> 
+                        <option value="problema-pedido"> ❌ Problema con mi pedido </option>
+                        <option value="opinion"> 💬 Opinión o sugerencia </option>
+                        <option value="despacho"> 📦 Información de despacho </option> 
+                        <option value="producto"> 💻 Consulta sobre un producto </option>
+                        <option value="pago"> 💳 Problema con el pago </option>
+                        <option value="cambio-devolucion"> 🔄 Cambio o devolución </option> 
+                        <option value="otro"> ❓ Otro </option>
+                </select> 
+                </div>
+
+            </div>
+
+                <div class="campo">
+
+                    <label for="mensaje">
+                        Mensaje
+                    </label>
+
+                    <textarea
+                        id="mensaje"
+                        name="mensaje"
+                        rows="6"
+                        placeholder="Escribe tu mensaje..."
+                        required></textarea>
+
+                </div>
+
+
+                <button type="submit" class="btn-enviar">
+                    🚀 ENVIAR MENSAJE
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <!-- PIE DE PAGINA -->
+    <footer>
+
+        <p>
+            © 2026 LEVEL-UP GAMER
+        </p>
+
+        <p>
+            🎮 Juega. Personaliza. Disfruta. Sube de nivel.
+        </p>
+
+    </footer>
+
+</body>
+
+</html>

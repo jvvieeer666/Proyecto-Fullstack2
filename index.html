@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LEVEL-UP GAMER</title>
+
+    <!-- Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+
+<body>
+
+    <!-- ENCABEZADO -->
+    <header>
+
+        <h1>LEVEL-UP GAMER</h1>
+
+        <!-- MENÚ -->
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="#productos">Productos</a>
+            <a href="#nosotros">Nosotros</a>
+            <a href="#blogs">Blogs</a>
+            <a href="#contacto">Contacto</a>
+        </nav>
+       <!-- CARRITO DE COMPRAS --> 
+   <div class="acciones-header">
+
+    <button id="abrir-carrito" class="btn-carrito-header">
+        🛒 Carrito
+        <span id="contador-carrito">0</span>
+    </button>
+
+    <div class="login">
+        <a href="inicio_sesion.html" class="btn-login">
+            👤 Iniciar sesión
+        </a>
+        <a href="registro.html" class="btn-registro">📝 Registrarse</a>
+    </div>
+
+</div>
+    </header>
+
+
+    <main>
+
+        <!-- QUIÉNES SOMOS -->
+        <section id="nosotros">
+
+            <h2>QUIÉNES SOMOS</h2>
+
+            <p>
+                Level-Up Gamer es una tienda online dedicada a satisfacer
+                las necesidades de los entusiastas de los videojuegos en Chile.
+                Lanzada hace dos años como respuesta a la creciente demanda
+                durante la pandemia, Level-Up Gamer ofrece una amplia gama
+                de productos para gamers, desde consolas y accesorios hasta
+                computadores y sillas especializadas.
+            </p>
+
+            <p>
+                Aunque no cuenta con una ubicación física,
+                realiza despachos a todo el país.
+            </p>
+
+        </section>
+
+
+        <!-- PRODUCTOS -->
+        <section id="productos">
+
+            <h2>NUESTROS PRODUCTOS</h2>
+
+            <div class="productos">
+
+                <!-- PRODUCTO 1 -->
+                <article class="producto">
+
+                    <div class="">
+                        <img src="https://i5.walmartimages.cl/asr/f2dc7333-726e-46d4-9eed-e66de629fb61.9b79ad009e52a9b2e103d030d98c9160.jpeg">
+                        🎮
+                    </div>
+
+                    <h3>Control Gamer</h3>
+                    <p class="codigo">
+                     Código: AC001
+                    </p>
+                    <p>
+                     Ofrece una experiencia de juego cómoda con botones
+                     mapeables y una respuesta táctil mejorada.
+                     Compatible con consolas Xbox y PC.
+                    </p>
+                    <p>$59.990 CLP</p>
+
+                    <button class="btn-agregar"
+                            data-nombre="Control Gamer"
+                            data-precio="$59.990 CLP">
+                        Agregar al carrito
+                    </button>
+
+                </article>
+                 <article class="producto">
+
+                    <div class="">
+                        <img src="https://media.spdigital.cl/thumbnails/products/ruuqaor9_dac549f9_thumbnail_4096.jpg" alt="Auriculares Gamer HyperX Cloud II">
+                        🎮
+                    </div>
+
+                    <h3>Auriculares Gamer HyperX Cloud II</h3>
+                    <p class="codigo">
+                     Código: AC002
+                    </p>
+                    <p>
+                     Proporcionan un sonido envolvente de calidad con
+                     un micrófono desmontable y almohadillas de espuma
+                     viscoelástica para mayor comodidad durante largas
+                     sesiones de juego.
+                    </p>
+                    <p>$79.990 CLP</p>
+
+                    <button class="btn-agregar"
+                            data-nombre="Auriculares Gamer HyperX Cloud II"
+                            data-precio="79990">
+                        Agregar al carrito
+                    </button>
+
+                </article>
+
+                <article class="producto">
+
+                    <div class="">
+                        <img src="https://media.falabella.com/falabellaCL/156495581_01/w=1200,h=1200,fit=pad" alt="Mouse Gamer Logitech G502 HERO">
+                        🎮
+                    </div>
+
+                    <h3>Mouse Gamer Logitech G502 HERO</h3>
+                    <p class="codigo">
+                     Código: MS001
+                    </p>
+                    <p>
+                     Con sensor de alta precisión y botones personalizables,
+                    este mouse es ideal para gamers que buscan un control
+                    preciso y personalización.
+                    </p>
+                    <p>$49.990 CLP</p>
+
+                    <button class="btn-agregar"
+                            data-nombre="Mouse Gamer Logitech G502 HERO"
+                            data-precio="$49.990 CLP">
+                        Agregar al carrito
+                    </button>
+
+                </article>
+
+                <article class="producto">
+
+                    <div class="">
+                        <img src="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcR10h795ngPs0Vf3x94aZLNo9I2ZxarYuIRkjIE0aKIHzke8DAb90xHa7M093Vy3VAeokY4-v18_SzhBokVJ9HdPHyqBs6ZhVQhXI9VmdSZZY4s6BUL89n0" alt="Mousepad Razer Goliathus Extended Chroma">
+                        🎮
+                    </div>
+
+                    <h3>Mousepad Razer Goliathus Extended Chroma</h3>
+                    <p class="codigo">
+                     Código: MP001
+                    </p>
+                    <p>
+                      Ofrece un área de juego amplia con iluminación RGB
+                      personalizable, asegurando una superficie suave y
+                      uniforme para el movimiento del mouse.
+                    </p>
+                    <p>$29.990 CLP</p>
+
+                    <button class="btn-agregar"
+                            data-nombre="Mousepad Razer Goliathus Extended Chroma"
+                            data-precio="$29.990 CLP">
+                        Agregar al carrito
+                    </button>
+
+                </article>
+
+
+                <!-- PRODUCTO 2 -->
+                <article class="producto">
+
+                    <div class="imagen-producto">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-SpQ9c7n4ZDaBkZz-pKy0NEswPV7iu_tCZMV7c2kljw&s" alt="Play Station 5">
+                        🕹️
+                    </div>
+
+                    <h3>Consola Gamer</h3>
+                     Código: CO001
+                    <p>
+                     La consola de última generación de Sony, que ofrece gráficos
+                     impresionantes y tiempos de carga ultrarrápidos para una experiencia de juego inmersiva
+                    </p>
+                    <p>$549.990 CLP</p>
+
+                    <button class="btn-agregar"
+                            data-nombre="Consola Gamer"
+                            data-precio="549.990">
+                        Agregar al carrito
+                    </button>
+
+                </article>
+
+
+                <!-- PRODUCTO 3 -->
+                <article class="producto">
+
+                    <div class="imagen-producto">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5WmcwZr4f2avB3ZdZbVimkHRhSs7uNbSLRHnQMB5Lzg&s=10" alt="Silla Gamer Secretlab Titan ">
+                        
+                    </div>
+
+                    <h3>Silla Gamer Secretlab Titan</h3>
+                    <p class="codigo">
+                    Código: SG001 
+                    </p>
+                    <p>
+                      Diseñada para el máximo confort, esta silla ofrece un soporte ergonómico y personalización ajustable para sesiones de juego prolongadas.
+                    </p>
+                    <p>$349.990 CLP</p>
+
+                    <button class="btn-agregar"
+                            data-nombre="Silla Gamer Secretlab Titan"
+                            data-precio="349.990">
+                        Agregar al carrito
+                    </button>
+
+                </article>
+
+
+                <!-- PRODUCTO 4 -->
+                <article class="producto">
+
+                    <div class="imagen-producto">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRv3XixjADXXicAg9AHDnWwum48WguHtPI_cU6NZQ7XOQ&s=10" alt="Polera Gamer Personalizada 'Level-Up' ">
+                    </div>
+
+                    <h3>Polera Gamer Personalizada 'Level-Up'</h3>
+                    <p class="codigo">
+                    Código: PP001
+                    </p>
+                     <p>
+                       Una camiseta cómoda y estilizada, con la posibilidad de personalizarla con tu gamer tag o diseño favorito.
+                     </p>
+                    <p>$149.990</p>
+
+                    <button class="btn-agregar"
+                            data-nombre="Polera Gamer Personalizada 'Level-Up"
+                            data-precio="149990">
+                        Agregar al carrito
+                    </button>
+
+                </article>
+
+
+                <!-- PRODUCTO 5 -->
+                <article class="producto">
+
+                    <div class="imagen-producto">
+                         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2WnrovxaRwBhbW4MiBUX1IyWvIo2qAvAf7m_sYHeXHw&s=10" alt="Catan juego de mesa">
+                    </div>
+
+                    <h3>Catan</h3>
+                    <p class="codigo">Código: JM001</p>
+
+                   <p>
+                    Un clásico juego de estrategia donde los jugadores compiten
+                    por colonizar y expandirse en la isla de Catan.
+                    Ideal para 3-4 jugadores y perfecto para noches de juego
+                    en familia o con amigos.
+                   </p>
+
+                   <p>Ideal para: 3-4 jugadores</p>
+                    <p>$29.990 CLP</p>
+
+                    <button class="btn-agregar"
+                            data-nombre="Catan"
+                            data-precio="$29.990 CLP">
+                        Agregar al carrito
+                    </button>
+
+                </article>
+
+
+                <!-- PRODUCTO 6 -->
+                <article class="producto">
+
+                    <div class="imagen-producto">
+                         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbEtJm-tmJgbMtByrwgnuRm97Rdul-D4GqLQbuZ7N6kA&s=10" alt="Carcassonne">
+                    </div>
+
+                    <h3>Carcassonne</h3>
+                    <p class="codigo">Código: JM002</p>
+
+                   <p>
+                    Un juego de colocación de fichas donde los jugadores
+                    construyen el paisaje alrededor de la fortaleza medieval
+                    de Carcassonne.
+                    Ideal para 2-5 jugadores y fácil de aprender.
+                   </p>
+
+                   <p>Ideal para: 2-5 jugadores</p>
+                    <p>$24.990 CLP</p>
+
+                    <button class="btn-agregar"
+                            data-nombre="Carcassonne"
+                            data-precio="24.990 ">
+                        Agregar al carrito
+                    </button>
+
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- COMUNIDAD -->
+        <section id="blogs">
+
+            <h2>COMUNIDAD GAMER</h2>
+
+            <p>
+                Encuentra noticias, consejos y guías para
+                mejorar tu experiencia de juego.
+            </p>
+
+            <button>
+               <a href="blogs.html">VER NOTICIAS</a> 
+            </button>
+
+        </section>
+
+    </main>
+
+
+    <!-- PIE DE PÁGINA -->
+    <footer id="contacto">
+
+        <h3>Contacto</h3>
+
+        <p>
+            Escuchamos todas tus peticiones, propuestas, preguntas y quejas.
+            Formando una comunidad sana.
+        </p>
+
+        <button>
+            <a href="contacto.html">CONTACTO</a>
+        </button>
+
+        <p>© 2026 LEVEL-UP GAMER</p>
+
+    </footer>
+<!-- CARRITO LATERAL -->
+
+<div id="fondo-carrito" class="fondo-carrito"></div>
+
+<aside id="carrito-lateral" class="carrito-lateral">
+
+    <div class="carrito-header">
+
+        <h2>🛒 TU CARRITO</h2>
+
+        <button id="cerrar-carrito" class="btn-cerrar">
+            ✕
+        </button>
+
+    </div>
+
+    <div id="carrito">
+
+        <p id="carrito-vacio">
+            Tu carrito está vacío.
+        </p>
+
+    </div>
+
+    <div class="resumen-carrito">
+
+        <h3>
+            Total:
+            $<span id="total">0</span> CLP
+        </h3>
+
+        <button id="vaciar-carrito" class="btn-vaciar">
+            🗑️ Vaciar carrito
+        </button>
+
+        <button id="comprar-carrito" class="btn-comprar">
+            💳 Comprar
+        </button>
+
+    </div>
+
+</aside>
+
+    <!-- JAVASCRIPT -->
+    <script src="js/carrito.js"></script>
+
+</body>
+
+</html>
