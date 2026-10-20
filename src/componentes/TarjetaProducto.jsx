@@ -1,4 +1,5 @@
 import { Card, Badge, Button } from 'react-bootstrap'
+import { useCart } from '../context/CartContext' // 👈 1. Importamos el hook
 
 // Convierte 59990 en "$59.990"
 function formatearPrecio(valor) {
@@ -9,7 +10,11 @@ function formatearPrecio(valor) {
 }
 
 function TarjetaProducto({ producto }) {
-  const { nombre, categoria, precio, stock, imagen, descripcion } = producto
+  // 👈 2. Traemos la función addToCart del contexto
+  const { addToCart } = useCart(); 
+  
+  // 👈 Agregamos 'id' a la desestructuración
+  const { id, nombre, categoria, precio, stock, imagen, descripcion } = producto
   const agotado = stock === 0
 
   return (
@@ -32,7 +37,13 @@ function TarjetaProducto({ producto }) {
         <Card.Text className={agotado ? 'text-danger' : 'text-success'}>
           {agotado ? 'Sin stock' : `Quedan ${stock} unidades`}
         </Card.Text>
-        <Button variant="primary" disabled={agotado}>
+        
+        {/* 👈 3. Conectamos el botón */}
+        <Button 
+          variant="primary" 
+          disabled={agotado}
+          onClick={() => addToCart(producto)}
+        >
           Agregar al carrito
         </Button>
       </Card.Body>

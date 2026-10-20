@@ -1,7 +1,12 @@
 import { Navbar, Nav, Container, Button, Badge } from 'react-bootstrap'
 import { NavLink } from 'react-router'
+import { useCart } from '../context/CartContext' // 👈 1. Importamos el hook
 
-function BarraNavegacion({ cantidad }) {
+// 👈 2. Quitamos la prop 'cantidad' de los paréntesis
+function BarraNavegacion() {
+  // 👈 3. Traemos totalItems del contexto
+  const { totalItems } = useCart();
+
   return (
     <Navbar bg="dark" data-bs-theme="dark" expand="lg" sticky="top">
       <Container>
@@ -16,7 +21,8 @@ function BarraNavegacion({ cantidad }) {
             <Nav.Link as={NavLink} to="/contacto">Contacto</Nav.Link>
           </Nav>
           <Button as={NavLink} to="/carrito" variant="outline-light">
-            🛒 Carrito <Badge bg="primary">{cantidad}</Badge>
+            {/* 👈 4. Usamos totalItems en lugar de cantidad */}
+            🛒 Carrito <Badge bg="primary">{totalItems}</Badge>
           </Button>
         </Navbar.Collapse>
       </Container>

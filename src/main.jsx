@@ -6,11 +6,14 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 
 import App from './App.jsx'
+import { CartProvider } from './context/CartContext' // 👈 1. Importamos el Provider
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <CartProvider>  {/* 👈 2. Envolvemos la App */}
+        <App />
+      </CartProvider>
     </BrowserRouter>
   </StrictMode>,
 )
