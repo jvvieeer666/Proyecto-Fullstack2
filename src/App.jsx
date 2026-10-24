@@ -6,6 +6,10 @@ import Nosotros from './paginas/Nosotros.jsx'
 import Contacto from './paginas/Contacto.jsx'
 import Carrito from './paginas/Carrito.jsx'
 import NoEncontrada from './paginas/NoEncontrada.jsx'
+import Admin from './paginas/Admin.jsx'
+
+import './paginas/Admin.jsx'
+
 
 function App() {
   return (
@@ -16,6 +20,7 @@ function App() {
         <Route path="contacto" element={<Contacto />} />
         <Route path="carrito" element={<Carrito />} />
         <Route path="*" element={<NoEncontrada />} />
+        <Route path="admin" element={<Admin />} />
       </Route>
     </Routes>
   )
