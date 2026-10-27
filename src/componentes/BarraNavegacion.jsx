@@ -1,17 +1,16 @@
 import { Navbar, Nav, Container, Button, Badge } from 'react-bootstrap'
-import { NavLink, Link, useNavigate } from 'react-router' // 👈 Sin -dom
+import { NavLink, Link, useNavigate } from 'react-router'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 
 function BarraNavegacion() {
   const { totalItems } = useCart()
+  const { usuario, logout, esAdmin } = useAuth()
   const navigate = useNavigate()
 
-  const usuarioLogueado = JSON.parse(localStorage.getItem('usuario'))
-
   const handleLogout = () => {
-    localStorage.removeItem('usuario')
+    logout()
     navigate('/')
-    window.location.reload()
   }
 
   return (
@@ -25,29 +24,36 @@ function BarraNavegacion() {
         <Navbar.Collapse id="menu-principal">
           <Nav className="mx-auto menu-gamer">
             <Nav.Link as={NavLink} to="/" end>Inicio</Nav.Link>
-            <Nav.Link as={NavLink} to="/#productos">Productos</Nav.Link>
             <Nav.Link as={NavLink} to="/nosotros">Nosotros</Nav.Link>
             <Nav.Link as={NavLink} to="/contacto">Contacto</Nav.Link>
+            {esAdmin && (
+              <Nav.Link as={NavLink} to="/admin">⚡ Admin</Nav.Link>
+            )}
           </Nav>
-          
+
           <div className="acciones-nav">
             <Button as={Link} to="/carrito" className="boton-carrito">
               🛒 Carrito <Badge bg="success">{totalItems}</Badge>
             </Button>
 
-            {usuarioLogueado ? (
+            {usuario ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ color: '#fff', fontWeight: 'bold' }}>
-                  👤 {usuarioLogueado.nombre}
+                  👤 {usuario.nombre} {esAdmin && '(Admin)'}
                 </span>
                 <Button variant="outline-danger" size="sm" onClick={handleLogout}>
                   Cerrar sesión
                 </Button>
               </div>
             ) : (
-              <Button as={Link} to="/login" className="boton-login">
-                Iniciar sesión
-              </Button>
+              <>
+                <Button as={Link} to="/login" className="boton-login">
+                  Iniciar sesión
+                </Button>
+                <Button as={Link} to="/registro" variant="outline-light" size="sm">
+                  Registrarse
+                </Button>
+              </>
             )}
           </div>
         </Navbar.Collapse>

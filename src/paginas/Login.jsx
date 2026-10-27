@@ -1,37 +1,80 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router'; // 👈 Sin -dom
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router'
+import { Container, Form, Button, Alert } from 'react-bootstrap'
+import { useAuth } from '../context/AuthContext'
 
 function Login() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate()
+  const { login } = useAuth()
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (email && password) {
-      const usuarioFalso = { nombre: email.split('@')[0], email: email };
-      localStorage.setItem('usuario', JSON.stringify(usuarioFalso));
-      navigate('/');
-      window.location.reload();
-    } else {
-      alert("Por favor, llena ambos campos");
+    e.preventDefault()
+    setError('')
+
+    if (!email || !password) {
+      return setError('Por favor, llena ambos campos.')
     }
-  };
+
+    const resultado = login(email, password)
+
+    if (!resultado.ok) {
+      return setError(resultado.error)
+    }
+
+    // Si es admin, va al panel; si es cliente, va al inicio
+    if (resultado.rol === 'admin') {
+      navigate('/admin')
+    } else {
+      navigate('/')
+    }
+  }
 
   return (
-    <div style={{ minHeight: '80vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212' }}>
-      <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '10px', width: '100%', maxWidth: '400px', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333' }}>Iniciar Sesión</h2>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <input type="email" placeholder="Tu correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} style={{ padding: '12px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '16px' }} />
-          <input type="password" placeholder="Tu contraseña" value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '12px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '16px' }} />
-          <button type="submit" style={{ padding: '12px', backgroundColor: '#198754', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
-            Ingresar
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+    <Container className="py-5" style={{ maxWidth: '450px' }}>
+      <h1 className="mb-3">Iniciar sesión</h1>
+      <p className="text-muted">Accede a tu cuenta de Level-Up Gamer.</p>
+
+      {error && <Alert variant="danger">{error}</Alert>}
+
+      <Form onSubmit={handleSubmit} noValidate>
+        <Form.Group className="mb-3">
+          <Form.Label>Correo electrónico</Form.Label>
+          <Form.Control
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@correo.cl"
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-4">
+          <Form.Label>Contraseña</Form.Label>
+          <Form.Control
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Form.Group>
+
+        <Button variant="success" type="submit" className="w-100">
+          Ingresar
+        </Button>
+      </Form>
+
+      <p className="text-center mt-3 text-muted">
+        ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>
+      </p>
+
+      <hr />
+      <p className="text-center text-muted small">
+        ¿Eres administrador? <Link to="/login-admin">Accede aquí</Link>
+      </p>
+    </Container>
+  )
 }
 
-export default Login;
+export default Login
