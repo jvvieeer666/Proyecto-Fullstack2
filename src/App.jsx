@@ -1,3 +1,4 @@
+
 import { Routes, Route } from 'react-router'
 
 import Layout from './componentes/Layout.jsx'
@@ -7,6 +8,7 @@ import Contacto from './paginas/Contacto.jsx'
 import Carrito from './paginas/Carrito.jsx'
 import NoEncontrada from './paginas/NoEncontrada.jsx'
 import Admin from './paginas/Admin.jsx'
+import Vendedor from './paginas/Vendedor.jsx'
 import Login from './paginas/Login.jsx'
 import Registro from './paginas/Registro.jsx'
 import LoginAdmin from './paginas/LoginAdmin.jsx'
@@ -23,6 +25,7 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="registro" element={<Registro />} />
         <Route path="login-admin" element={<LoginAdmin />} />
+
         <Route
           path="admin"
           element={
@@ -31,6 +34,16 @@ function App() {
             </RutaProtegida>
           }
         />
+
+        <Route
+          path="vendedor"
+          element={
+            <RutaProtegida rolesPermitidos={['VENDEDOR']}>
+              <Vendedor />
+            </RutaProtegida>
+          }
+        />
+
         <Route path="*" element={<NoEncontrada />} />
       </Route>
     </Routes>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Container, Alert, Spinner, Button, Badge } from 'react-bootstrap'
 import { Link } from 'react-router'
 import Catalogo from '../componentes/Catalogo.jsx'
-import { getProductosV2 } from '../servicios/apiProductos.js'
+import { getProductosV2,  getError500, } from '../servicios/apiProductos.js'
 
 function Inicio() {
   const [productos, setProductos] = useState([])
@@ -10,16 +10,25 @@ function Inicio() {
   const [respuestaApi, setRespuestaApi] = useState(null)
 
   async function cargarCatalogo(simularError = false) {
-    setCargando(true)
-    const res = await getProductosV2(simularError)
-    setRespuestaApi(res)
-    if (res.ok) {
-      setProductos(res.data)
-    } else {
-      setProductos([])
-    }
-    setCargando(false)
+  setCargando(true)
+
+  const res = simularError
+    ? await getError500()
+    : await getProductosV2()
+
+  setRespuestaApi(res)
+
+  if (res.ok) {
+    setProductos(res.data)
+  } else if (res.status === 500) {
+    // Conservamos los productos que ya estaban cargados
+    console.error('Error 500 recibido desde Spring Boot:', res.error)
+  } else {
+    setProductos([])
   }
+
+  setCargando(false)
+}
 
   useEffect(() => {
     cargarCatalogo(false)

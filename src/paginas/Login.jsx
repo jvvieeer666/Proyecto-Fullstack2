@@ -23,25 +23,38 @@ function Login() {
     }
 
     setCargando(true)
-    const resultado = await login(email, password)
-    setCargando(false)
 
-    if (!resultado.ok) {
-      setError(resultado.error)
-      return
-    }
+    try {
+      const resultado = await login(email, password)
 
-    if (resultado.rol === 'ADMIN') {
-      navigate('/admin')
-    } else {
-      navigate('/')
+      if (!resultado.ok) {
+        setError(resultado.error)
+        return
+      }
+
+      // Redirección según el rol del usuario.
+      if (resultado.rol === 'ADMIN') {
+        navigate('/admin', { replace: true })
+      } else if (resultado.rol === 'VENDEDOR') {
+        navigate('/vendedor', { replace: true })
+      } else if (resultado.rol === 'CLIENTE') {
+        navigate('/', { replace: true })
+      } else {
+        setError('El usuario tiene un rol no reconocido.')
+      }
+    } catch {
+      setError('Ocurrió un error al iniciar sesión.')
+    } finally {
+      setCargando(false)
     }
   }
 
   return (
     <Container className="py-5" style={{ maxWidth: '450px' }}>
       <h1 className="mb-3">Iniciar sesión</h1>
-      <p className="text-muted">Accede a tu cuenta de Level-Up Gamer.</p>
+      <p className="text-muted">
+        Accede a tu cuenta de Level-Up Gamer.
+      </p>
 
       {error && <Alert variant="danger">{error}</Alert>}
 
@@ -62,6 +75,7 @@ function Login() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Ingresa tu contraseña"
           />
         </Form.Group>
 
@@ -71,7 +85,14 @@ function Login() {
           className="w-100"
           disabled={cargando}
         >
-          {cargando ? <Spinner size="sm" /> : 'Ingresar'}
+          {cargando ? (
+            <>
+              <Spinner size="sm" className="me-2" />
+              Ingresando...
+            </>
+          ) : (
+            'Ingresar'
+          )}
         </Button>
       </Form>
 

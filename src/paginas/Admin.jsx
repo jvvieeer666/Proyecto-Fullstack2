@@ -1,11 +1,12 @@
+
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import {
   getProductosV1,
-  getProductosV2,
   postProductoV1,
   putProductoV2,
   deleteProductoV2,
+  getError500,
 } from '../servicios/apiProductos.js'
 import '../Admin.css'
 
@@ -14,7 +15,7 @@ const formatoCLP = (valor) =>
     style: 'currency',
     currency: 'CLP',
     maximumFractionDigits: 0,
-  }).format(valor)
+  }).format(Number(valor) || 0)
 
 const productoVacio = {
   nombre: '',
@@ -28,6 +29,7 @@ const productoVacio = {
 
 function Admin() {
   const { token, usuario } = useAuth()
+
   const [productos, setProductos] = useState([])
   const [seccion, setSeccion] = useState('productos')
   const [busqueda, setBusqueda] = useState('')
@@ -39,44 +41,116 @@ function Admin() {
   const [logApi, setLogApi] = useState(null)
   const [cargando, setCargando] = useState(false)
 
-  async function cargarProductos(simularError500 = false) {
+  // ==========================================
+  // CARGAR PRODUCTOS DESDE SPRING BOOT
+  // ==========================================
+
+  async function cargarProductos() {
     setCargando(true)
-    // 1. Verificamos acceso privado admin en v1
-    const resV1 = await getProductosV1(token, simularError500)
-    if (!resV1.ok) {
-      setLogApi(resV1)
+
+    try {
+      const respuesta = await getProductosV1(token)
+
+      setLogApi(respuesta)
+
+      if (!respuesta.ok) {
+        setProductos([])
+        console.error('Error al consultar productos:', respuesta)
+        return
+      }
+
+      if (!Array.isArray(respuesta.data)) {
+        setProductos([])
+        setLogApi({
+          ...respuesta,
+          ok: false,
+          error: 'La API no devolvió una lista válida de productos.',
+        })
+        console.error('Respuesta inesperada:', respuesta.data)
+        return
+      }
+
+      // Normalizar los datos recibidos desde Spring Boot
+      const productosNormalizados = respuesta.data.map((producto) => ({
+        ...producto,
+        nombre: producto.nombre ?? '',
+        codigo: producto.codigo ?? '',
+        categoria: producto.categoria ?? 'Sin categoría',
+        precio: Number(producto.precio) || 0,
+        stock: Number(producto.stock) || 0,
+        imagen: producto.imagen ?? '',
+        descripcion: producto.descripcion ?? '',
+      }))
+
+      setProductos(productosNormalizados)
+
+      console.log(
+        'Productos cargados correctamente:',
+        productosNormalizados,
+      )
+    } catch (error) {
+      console.error('Error inesperado:', error)
+
+      setProductos([])
+
+      setLogApi({
+        ok: false,
+        method: 'GET',
+        status: 0,
+        statusText: 'Error de conexión',
+        url: 'http://localhost:8081/api/productos',
+        error: error.message || 'No se pudieron cargar los productos.',
+        timestamp: new Date().toLocaleString('es-CL'),
+      })
+    } finally {
       setCargando(false)
-      return
     }
-    // 2. Obtenemos detalles completos (imagen, descripción) desde v2
-    const resV2 = await getProductosV2(false)
-    setLogApi(resV1)
-    if (resV2.ok) {
-      setProductos(resV2.data)
-    }
-    setCargando(false)
   }
 
+  // Cargar automáticamente al entrar al panel
   useEffect(() => {
-    cargarProductos(false)
-  }, [])
+    cargarProductos()
+  }, [token])
 
-  const categorias = [...new Set(productos.map((p) => p.categoria))]
+  // ==========================================
+  // ESTADÍSTICAS
+  // ==========================================
+
+  const categorias = useMemo(() => {
+    return [...new Set(productos.map((p) => p.categoria))]
+  }, [productos])
+
+  const stockTotal = useMemo(() => {
+    return productos.reduce((total, p) => total + p.stock, 0)
+  }, [productos])
+
+  const valorInventario = useMemo(() => {
+    return productos.reduce(
+      (total, p) => total + p.precio * p.stock,
+      0,
+    )
+  }, [productos])
+
+  // ==========================================
+  // BÚSQUEDA Y FILTROS
+  // ==========================================
 
   const productosFiltrados = useMemo(() => {
     return productos.filter((producto) => {
-      const texto = busqueda.toLowerCase()
+      const texto = busqueda.toLowerCase().trim()
+
+      const nombre = String(producto.nombre || '').toLowerCase()
+      const codigo = String(producto.codigo || '').toLowerCase()
 
       const coincideTexto =
-        producto.nombre.toLowerCase().includes(texto) ||
-        producto.codigo.toLowerCase().includes(texto)
+        nombre.includes(texto) || codigo.includes(texto)
 
       const coincideCategoria =
         categoria === 'Todas' || producto.categoria === categoria
 
       const coincideStock =
         estadoStock === 'Todos' ||
-        (estadoStock === 'Disponible' && producto.stock > 0) ||
+        (estadoStock === 'Disponible' && producto.stock > 5) ||
         (estadoStock === 'Agotado' && producto.stock === 0) ||
         (estadoStock === 'Stock bajo' &&
           producto.stock > 0 &&
@@ -86,12 +160,9 @@ function Admin() {
     })
   }, [productos, busqueda, categoria, estadoStock])
 
-  const stockTotal = productos.reduce((total, p) => total + p.stock, 0)
-
-  const valorInventario = productos.reduce(
-    (total, p) => total + p.precio * p.stock,
-    0,
-  )
+  // ==========================================
+  // FORMULARIO DE PRODUCTOS
+  // ==========================================
 
   function abrirNuevo() {
     setProductoEditando(null)
@@ -101,77 +172,167 @@ function Admin() {
 
   function abrirEdicion(producto) {
     setProductoEditando(producto.id)
+
     setFormulario({
       ...producto,
       precio: String(producto.precio),
       stock: String(producto.stock),
     })
+
     setModalAbierto(true)
   }
+
+  function actualizarCampo(campo, valor) {
+    setFormulario((anterior) => ({
+      ...anterior,
+      [campo]: valor,
+    }))
+  }
+
+  // ==========================================
+  // CREAR Y EDITAR PRODUCTOS
+  // ==========================================
 
   async function guardarProducto(evento) {
     evento.preventDefault()
 
     const payload = {
-      ...formulario,
       nombre: formulario.nombre.trim(),
-      codigo: formulario.codigo.trim().toUpperCase(),
+      categoria: formulario.categoria,
       precio: Number(formulario.precio),
       stock: Number(formulario.stock),
+      codigo: formulario.codigo.trim().toUpperCase(),
       imagen: formulario.imagen.trim(),
       descripcion: formulario.descripcion.trim(),
     }
 
-    let respuesta
-    if (productoEditando !== null) {
-      // PUT /v2/productos/{id} (Admin)
-      respuesta = await putProductoV2(productoEditando, payload, token)
-    } else {
-      // POST /v1/productos (Admin)
-      respuesta = await postProductoV1(payload, token)
-    }
-
-    setLogApi(respuesta)
-
-    if (!respuesta.ok) {
-      window.alert(respuesta.error)
+    if (
+      !payload.nombre ||
+      !payload.codigo ||
+      !payload.categoria ||
+      !Number.isFinite(payload.precio) ||
+      payload.precio <= 0 ||
+      !Number.isInteger(payload.stock) ||
+      payload.stock < 0
+    ) {
+      window.alert('Revisa los datos ingresados. El precio debe ser mayor que cero y el stock no puede ser negativo.')
       return
     }
 
-    await cargarProductos(false)
-    setLogApi(respuesta)
-    setModalAbierto(false)
+    try {
+      let respuesta
+
+      if (productoEditando !== null) {
+        respuesta = await putProductoV2(
+          productoEditando,
+          payload,
+          token,
+        )
+      } else {
+        respuesta = await postProductoV1(payload, token)
+      }
+
+      setLogApi(respuesta)
+
+      if (!respuesta.ok) {
+        window.alert(respuesta.error || 'No se pudo guardar el producto.')
+        return
+      }
+
+      setModalAbierto(false)
+      setFormulario(productoVacio)
+      setProductoEditando(null)
+
+      await cargarProductos()
+
+      window.alert(
+        productoEditando !== null
+          ? 'Producto actualizado correctamente.'
+          : 'Producto creado correctamente.',
+      )
+    } catch (error) {
+      console.error('Error al guardar producto:', error)
+      window.alert('Ocurrió un error al guardar el producto.')
+    }
   }
+
+  // ==========================================
+  // ELIMINAR PRODUCTOS
+  // ==========================================
 
   async function eliminarProducto(producto) {
     const confirmar = window.confirm(
       `¿Seguro que quieres eliminar "${producto.nombre}"?`,
     )
+
     if (!confirmar) return
 
-    const respuesta = await deleteProductoV2(producto.id, token)
-    setLogApi(respuesta)
+    try {
+      const respuesta = await deleteProductoV2(producto.id, token)
 
-    if (respuesta.ok) {
-      await cargarProductos(false)
       setLogApi(respuesta)
+
+      if (!respuesta.ok) {
+        window.alert(respuesta.error || 'No se pudo eliminar el producto.')
+        return
+      }
+
+      await cargarProductos()
+
+      window.alert('Producto eliminado correctamente.')
+    } catch (error) {
+      console.error('Error al eliminar:', error)
+      window.alert('Ocurrió un error al eliminar el producto.')
     }
   }
 
-  // Pruebas rápidas para evidenciar códigos HTTP 400, 404 y 500
+  // ==========================================
+  // PRUEBAS DE ERRORES HTTP
+  // ==========================================
+
   async function probarError400() {
-    const res = await postProductoV1({ nombre: '', codigo: '', precio: -10, stock: 0 }, token)
-    setLogApi(res)
+    const respuesta = await postProductoV1(
+      {
+        nombre: '',
+        categoria: '',
+        precio: -10,
+        stock: 0,
+        codigo: '',
+        imagen: '',
+        descripcion: '',
+      },
+      token,
+    )
+
+    setLogApi(respuesta)
   }
 
   async function probarError404() {
-    const res = await putProductoV2(9999, { nombre: 'Inexistente', codigo: 'ERR404', precio: 1000, stock: 1 }, token)
-    setLogApi(res)
+    const respuesta = await putProductoV2(
+      9999,
+      {
+        nombre: 'Inexistente',
+        codigo: 'ERR404',
+        categoria: 'Accesorios',
+        precio: 1000,
+        stock: 1,
+        imagen: '',
+        descripcion: '',
+      },
+      token,
+    )
+
+    setLogApi(respuesta)
   }
 
   async function probarError500() {
-    await cargarProductos(true)
+    const respuesta = await getError500(token)
+    setLogApi(respuesta)
   }
+
+  // ==========================================
+  // MENÚ
+  // ==========================================
 
   const menu = [
     { id: 'dashboard', nombre: 'Dashboard', icono: '▦' },
@@ -179,6 +340,10 @@ function Admin() {
     { id: 'pedidos', nombre: 'Pedidos', icono: '🛒' },
     { id: 'usuarios', nombre: 'Usuarios', icono: '👥' },
   ]
+
+  // ==========================================
+  // INTERFAZ
+  // ==========================================
 
   return (
     <div className="admin">
@@ -195,7 +360,9 @@ function Admin() {
           {menu.map((item) => (
             <button
               key={item.id}
-              className={`admin-menu-item ${seccion === item.id ? 'activo' : ''}`}
+              className={`admin-menu-item ${
+                seccion === item.id ? 'activo' : ''
+              }`}
               onClick={() => setSeccion(item.id)}
             >
               <span>{item.icono}</span>
@@ -206,7 +373,7 @@ function Admin() {
 
         <div className="admin-sidebar-footer">
           <span className="admin-status-dot" />
-          API Conectada ({usuario?.rol})
+          API Conectada ({usuario?.rol || 'ADMIN'})
         </div>
       </aside>
 
@@ -216,10 +383,14 @@ function Admin() {
             <p>LEVEL-UP GAMER / ADMIN</p>
             <h1>Panel de administración</h1>
           </div>
-          <a href="/" className="admin-volver">← Volver a la tienda</a>
+
+          <a href="/" className="admin-volver">
+            ← Volver a la tienda
+          </a>
         </header>
 
-        {/* Visor de estado de integración API REST */}
+        {/* VISOR DE RESPUESTAS API */}
+
         {logApi && (
           <div
             style={{
@@ -227,7 +398,9 @@ function Admin() {
               marginBottom: '20px',
               borderRadius: '10px',
               border: `1px solid ${logApi.ok ? '#198754' : '#dc3545'}`,
-              backgroundColor: logApi.ok ? 'rgba(25, 135, 84, 0.15)' : 'rgba(220, 53, 69, 0.15)',
+              backgroundColor: logApi.ok
+                ? 'rgba(25, 135, 84, 0.15)'
+                : 'rgba(220, 53, 69, 0.15)',
               color: '#fff',
               display: 'flex',
               justifyContent: 'space-between',
@@ -237,42 +410,88 @@ function Admin() {
             }}
           >
             <div>
-              <strong style={{ color: logApi.ok ? '#39ff14' : '#ff6b6b' }}>
+              <strong
+                style={{
+                  color: logApi.ok ? '#39ff14' : '#ff6b6b',
+                }}
+              >
                 [{logApi.method} {logApi.status} {logApi.statusText}]
               </strong>{' '}
+
               <code>{logApi.url}</code>
-              <div style={{ fontSize: '13px', marginTop: '4px', color: '#d0e2ff' }}>
+
+              <div
+                style={{
+                  fontSize: '13px',
+                  marginTop: '4px',
+                  color: '#d0e2ff',
+                }}
+              >
                 {logApi.ok
-                  ? `Operación exitosa (${logApi.timestamp}) — Token Admin verificado.`
+                  ? `Operación exitosa (${logApi.timestamp}).`
                   : logApi.error}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              <button type="button" className="admin-limpiar" onClick={() => cargarProductos(false)}>
-                GET v1 (200)
+
+            <div
+              style={{
+                display: 'flex',
+                gap: '6px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <button
+                type="button"
+                className="admin-limpiar"
+                onClick={cargarProductos}
+              >
+                GET productos
               </button>
-              <button type="button" className="admin-limpiar" onClick={probarError400}>
+
+              <button
+                type="button"
+                className="admin-limpiar"
+                onClick={probarError400}
+              >
                 Test 400
               </button>
-              <button type="button" className="admin-limpiar" onClick={probarError404}>
+
+              <button
+                type="button"
+                className="admin-limpiar"
+                onClick={probarError404}
+              >
                 Test 404
               </button>
-              <button type="button" className="admin-limpiar" onClick={probarError500}>
+
+              <button
+                type="button"
+                className="admin-limpiar"
+                onClick={probarError500}
+              >
                 Test 500
               </button>
             </div>
           </div>
         )}
 
+        {/* TÍTULO DE SECCIÓN */}
+
         <div className="admin-titulo-seccion">
           <div>
-            <span className="admin-etiqueta">GESTIÓN DE TIENDA • API REST v1/v2</span>
+            <span className="admin-etiqueta">
+              GESTIÓN DE TIENDA • API REST v1/v2
+            </span>
+
             <h2>
               {seccion === 'productos'
                 ? '📦 Productos'
                 : menu.find((m) => m.id === seccion)?.nombre}
             </h2>
-            <p>Administra el catálogo de Level-Up Gamer mediante endpoints protegidos.</p>
+
+            <p>
+              Administra el catálogo de Level-Up Gamer mediante endpoints REST.
+            </p>
           </div>
 
           {seccion === 'productos' && (
@@ -281,6 +500,8 @@ function Admin() {
             </button>
           )}
         </div>
+
+        {/* ESTADÍSTICAS */}
 
         <section className="admin-estadisticas">
           <article className="admin-stat-card">
@@ -314,6 +535,8 @@ function Admin() {
           </article>
         </section>
 
+        {/* SECCIÓN PRODUCTOS */}
+
         {seccion === 'productos' && (
           <>
             <section className="admin-filtros">
@@ -330,8 +553,11 @@ function Admin() {
                 onChange={(e) => setCategoria(e.target.value)}
               >
                 <option value="Todas">Todas las categorías</option>
+
                 {categorias.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
                 ))}
               </select>
 
@@ -364,11 +590,16 @@ function Admin() {
                 : `Mostrando ${productosFiltrados.length} de ${productos.length} productos`}
             </p>
 
+            {/* TARJETAS DE PRODUCTOS */}
+
             <section className="admin-productos-grid">
               {productosFiltrados.map((producto) => (
-                <article className="admin-producto-card" key={producto.id}>
+                <article
+                  className="admin-producto-card"
+                  key={producto.id}
+                >
                   <div className="admin-producto-imagen">
-                    {producto.imagen ? (
+                    {producto.imagen && (
                       <img
                         src={producto.imagen}
                         alt={producto.nombre}
@@ -377,7 +608,8 @@ function Admin() {
                           e.currentTarget.style.display = 'none'
                         }}
                       />
-                    ) : null}
+                    )}
+
                     <span className="admin-categoria">
                       {producto.categoria}
                     </span>
@@ -385,19 +617,26 @@ function Admin() {
 
                   <div className="admin-producto-contenido">
                     <h3>{producto.nombre}</h3>
-                    <p className="admin-codigo">Código: {producto.codigo}</p>
+
+                    <p className="admin-codigo">
+                      Código: {producto.codigo}
+                    </p>
+
                     <strong className="admin-precio">
                       {formatoCLP(producto.precio)}
                     </strong>
 
-                    <p className={`admin-stock ${
-                      producto.stock === 0
-                        ? 'agotado'
-                        : producto.stock <= 5
-                          ? 'bajo'
-                          : ''
-                    }`}>
+                    <p
+                      className={`admin-stock ${
+                        producto.stock === 0
+                          ? 'agotado'
+                          : producto.stock <= 5
+                            ? 'bajo'
+                            : ''
+                      }`}
+                    >
                       <span />
+
                       {producto.stock === 0
                         ? 'Sin stock'
                         : `Stock: ${producto.stock} unidades`}
@@ -410,6 +649,7 @@ function Admin() {
                       >
                         ✎ Editar
                       </button>
+
                       <button
                         className="admin-eliminar"
                         onClick={() => eliminarProducto(producto)}
@@ -422,54 +662,112 @@ function Admin() {
               ))}
             </section>
 
-            {productosFiltrados.length === 0 && (
+            {!cargando && productosFiltrados.length === 0 && (
               <div className="admin-vacio">
                 <span>🔎</span>
-                <h3>No se encontraron productos</h3>
-                <p>Prueba con otra búsqueda o cambia los filtros.</p>
+
+                <h3>
+                  {productos.length === 0
+                    ? 'No se pudieron cargar los productos'
+                    : 'No se encontraron productos'}
+                </h3>
+
+                <p>
+                  {productos.length === 0
+                    ? 'Comprueba la conexión con Spring Boot y vuelve a intentar.'
+                    : 'Prueba con otra búsqueda o cambia los filtros.'}
+                </p>
+
+                <button
+                  className="admin-boton"
+                  onClick={cargarProductos}
+                >
+                  Volver a cargar
+                </button>
               </div>
             )}
           </>
         )}
 
+        {/* DASHBOARD */}
+
         {seccion === 'dashboard' && (
           <section className="admin-info-card">
             <h2>Resumen de la tienda</h2>
-            <p>Actualmente tienes {productos.length} productos registrados y {stockTotal} unidades en inventario.</p>
-            <button className="admin-boton" onClick={() => setSeccion('productos')}>
+
+            <p>
+              Actualmente tienes {productos.length} productos registrados y{' '}
+              {stockTotal} unidades en inventario.
+            </p>
+
+            <button
+              className="admin-boton"
+              onClick={() => setSeccion('productos')}
+            >
               Administrar productos
             </button>
           </section>
         )}
 
+        {/* PEDIDOS */}
+
         {seccion === 'pedidos' && (
           <section className="admin-info-card">
             <h2>Gestión de pedidos</h2>
-            <p>Los pedidos confirmados desde el carrito se registran en sesión local.</p>
+
+            <p>
+              Los pedidos confirmados desde el carrito se registran en el sistema.
+            </p>
           </section>
         )}
+
+        {/* USUARIOS */}
 
         {seccion === 'usuarios' && (
           <section className="admin-info-card">
             <h2>Gestión de usuarios</h2>
-            <p>Administrador activo: <strong>{usuario?.nombre}</strong> ({usuario?.email}) — Rol: <strong>{usuario?.rol}</strong>.</p>
+
+            <p>
+              Administrador activo:{' '}
+              <strong>{usuario?.nombre}</strong> ({usuario?.email}) —
+              Rol: <strong>{usuario?.rol}</strong>.
+            </p>
           </section>
         )}
       </main>
 
+      {/* MODAL CREAR / EDITAR */}
+
       {modalAbierto && (
-        <div className="admin-modal-fondo" onMouseDown={(e) => {
-          if (e.target === e.currentTarget) setModalAbierto(false)
-        }}>
+        <div
+          className="admin-modal-fondo"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              setModalAbierto(false)
+            }
+          }}
+        >
           <form className="admin-modal" onSubmit={guardarProducto}>
             <div className="admin-modal-header">
               <div>
                 <span className="admin-etiqueta">
-                  {productoEditando !== null ? 'PUT /v2/productos/{id}' : 'POST /v1/productos'}
+                  {productoEditando !== null
+                    ? 'PUT /v2/productos/{id}'
+                    : 'POST /v1/productos'}
                 </span>
-                <h2>{productoEditando !== null ? 'Editar producto' : 'Nuevo producto'}</h2>
+
+                <h2>
+                  {productoEditando !== null
+                    ? 'Editar producto'
+                    : 'Nuevo producto'}
+                </h2>
               </div>
-              <button type="button" className="admin-cerrar" onClick={() => setModalAbierto(false)}>
+
+              <button
+                type="button"
+                className="admin-cerrar"
+                onClick={() => setModalAbierto(false)}
+              >
                 ×
               </button>
             </div>
@@ -479,7 +777,9 @@ function Admin() {
               <input
                 required
                 value={formulario.nombre}
-                onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })}
+                onChange={(e) =>
+                  actualizarCampo('nombre', e.target.value)
+                }
               />
             </label>
 
@@ -489,7 +789,9 @@ function Admin() {
                 <input
                   required
                   value={formulario.codigo}
-                  onChange={(e) => setFormulario({ ...formulario, codigo: e.target.value })}
+                  onChange={(e) =>
+                    actualizarCampo('codigo', e.target.value)
+                  }
                 />
               </label>
 
@@ -497,10 +799,24 @@ function Admin() {
                 Categoría *
                 <select
                   value={formulario.categoria}
-                  onChange={(e) => setFormulario({ ...formulario, categoria: e.target.value })}
+                  onChange={(e) =>
+                    actualizarCampo('categoria', e.target.value)
+                  }
                 >
-                  {[...new Set([...categorias, 'Accesorios', 'Consolas', 'Sillas', 'Vestuario', 'Juegos de Mesa', 'Computadores'])].map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
+                  {[
+                    ...new Set([
+                      ...categorias,
+                      'Accesorios',
+                      'Consolas',
+                      'Sillas',
+                      'Vestuario',
+                      'Juegos de Mesa',
+                      'Computadores',
+                    ]),
+                  ].map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -515,7 +831,9 @@ function Admin() {
                   step="1"
                   required
                   value={formulario.precio}
-                  onChange={(e) => setFormulario({ ...formulario, precio: e.target.value })}
+                  onChange={(e) =>
+                    actualizarCampo('precio', e.target.value)
+                  }
                 />
               </label>
 
@@ -527,7 +845,9 @@ function Admin() {
                   step="1"
                   required
                   value={formulario.stock}
-                  onChange={(e) => setFormulario({ ...formulario, stock: e.target.value })}
+                  onChange={(e) =>
+                    actualizarCampo('stock', e.target.value)
+                  }
                 />
               </label>
             </div>
@@ -538,7 +858,9 @@ function Admin() {
                 type="url"
                 placeholder="https://..."
                 value={formulario.imagen}
-                onChange={(e) => setFormulario({ ...formulario, imagen: e.target.value })}
+                onChange={(e) =>
+                  actualizarCampo('imagen', e.target.value)
+                }
               />
             </label>
 
@@ -547,14 +869,21 @@ function Admin() {
               <textarea
                 rows="3"
                 value={formulario.descripcion}
-                onChange={(e) => setFormulario({ ...formulario, descripcion: e.target.value })}
+                onChange={(e) =>
+                  actualizarCampo('descripcion', e.target.value)
+                }
               />
             </label>
 
             <div className="admin-modal-acciones">
-              <button type="button" className="admin-cancelar" onClick={() => setModalAbierto(false)}>
+              <button
+                type="button"
+                className="admin-cancelar"
+                onClick={() => setModalAbierto(false)}
+              >
                 Cancelar
               </button>
+
               <button type="submit" className="admin-boton">
                 Guardar producto
               </button>

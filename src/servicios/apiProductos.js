@@ -17,7 +17,14 @@ async function solicitud(endpoint, opciones = {}) {
     })
 
     const texto = await respuesta.text()
-    const data = texto ? JSON.parse(texto) : null
+
+    let data = null
+
+    try {
+      data = texto ? JSON.parse(texto) : null
+    } catch {
+      data = texto
+    }
 
     return {
       ok: respuesta.ok,
@@ -32,6 +39,8 @@ async function solicitud(endpoint, opciones = {}) {
       timestamp: new Date().toLocaleString('es-CL'),
     }
   } catch (error) {
+    console.error('Error en solicitud API:', error)
+
     return {
       ok: false,
       status: 0,
@@ -84,4 +93,9 @@ export async function deleteProductoV2(id, token) {
     method: 'DELETE',
     token,
   })
+}
+
+// Provocar un error HTTP 500 real desde Spring Boot
+export async function getError500(token) {
+  return solicitud('/productos/test-error-500', { token })
 }
